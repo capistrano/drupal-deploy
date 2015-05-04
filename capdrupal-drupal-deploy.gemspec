@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.license      = 'MIT'
   spec.authors  = [ "Simon Perdrisat", "Gilles Doge" ]
   spec.email    = 'perdrisat@gmail.com'
-  spec.homepage = %q{https://github.com/gagarine/capistrano-drupal-deploy}
+  spec.homepage = %q{https://github.com/capistrano/drupal-deploy}
   spec.platform     = Gem::Platform::RUBY
   spec.description  = <<-DESC
     A set of tasks for deploying Drupal 7 projects with Capistrano 3 and the help of Drush.
