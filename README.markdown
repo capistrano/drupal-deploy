@@ -58,7 +58,7 @@ Drupal need settings.php and, files and private-files shared accross deploy
 set :linked_files, fetch(:linked_files, []).push('app/sites/default/settings.php')
 
 # Link dirs files and private-files
-# set :linked_dirs, fetch(:linked_dirs, []).push('app/sites/default/files', 'private-files')
+set :linked_dirs, fetch(:linked_dirs, []).push('app/sites/default/files', 'private-files')
 ```
 
 
