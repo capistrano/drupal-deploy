@@ -29,7 +29,6 @@ namespace :deploy do
 
     invoke "drupal:site_offline"
     invoke "drupal:update:updatedb"
-    invoke "drupal:cache:clear"
     invoke "drupal:feature_revert"
     invoke "drupal:site_online"
     invoke "drupal:cache:clear"
