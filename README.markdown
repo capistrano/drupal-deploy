@@ -1,12 +1,13 @@
-# Capistrano Drupal Deploy
+# Capistrano Drupal Plugin
 
-This gem provides a number of tasks which are useful for deploying Drupal 7 projects with [Capistrano 3](http://capistranorb.com/) and the help of drush. This is a short doc to help you deploy a drupal projet. To know more about capistrano read their documentation on [Capistrano 3](http://capistranorb.com/).
+Deploy [Drupal](https://www.drupal.org/) with [Capistrano v3](http://capistranorb.com/). This gem provide a number of tasks specific to Drupal 7.
 
+If you are new to capistrano check the [Capistrano 3 documentation](http://capistranorb.com/).
 
 ## Installation
 [gems](http://rubygems.org) must be installed on your system first.
 
-Your application Gemfile need those lines:
+Add this line to your application's Gemfile:
 
 ```ruby
 source 'https://rubygems.org'
