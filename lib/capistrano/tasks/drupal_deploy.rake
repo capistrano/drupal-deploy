@@ -125,7 +125,7 @@ namespace :drupal do
     task :updatedb do
       on roles(:app) do
         within release_path.join(fetch(:app_path)) do
-          execute :drush, 'updatedb'
+          execute :drush, 'updatedb -y'
         end
       end
     end
