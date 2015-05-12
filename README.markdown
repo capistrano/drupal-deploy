@@ -11,7 +11,7 @@ Your application Gemfile need those lines:
 ```ruby
 source 'https://rubygems.org'
 group :development do
-    gem 'capistrano-drupal-deploy', '~> 0.0.1' , :path => "/Users/simon/bin/capistrano-drupal-deploy/"
+    gem 'capistrano-drupal-deploy', '~> 0.0.2' , :path => "/Users/simon/bin/capistrano-drupal-deploy/"
 end
 ```
 
