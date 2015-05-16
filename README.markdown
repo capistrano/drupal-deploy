@@ -1,4 +1,4 @@
-# Capistrano Drupal Deploy
+# Capistrano::DrupalDeploy
 
 Deploy [Drupal](https://www.drupal.org/) with [Capistrano v3](http://capistranorb.com/). This gem is a pluging for capistrano that provide a number of tasks specific to Drupal. For the moment support only Drupal 7.
 
