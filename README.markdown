@@ -12,7 +12,7 @@ Add this line to your application's Gemfile:
 ```ruby
 source 'https://rubygems.org'
 group :development do
-    gem 'capistrano-drupal-deploy', '~> 0.0.2' , :path => "/Users/simon/bin/capistrano-drupal-deploy/"
+    gem 'capistrano-drupal-deploy', '~> 0.0.2'
 end
 ```
 
@@ -195,6 +195,3 @@ This show a list of all avaible commands:
 	cap install                        # Install Capistrano, cap install STAGES=staging,production
 
 
-## Infos
-
-Inspired by [capistrano-drupal](https://github.com/previousnext/capistrano-drupal) and [capdrupal](https://github.com/antistatique/capdrupal)
