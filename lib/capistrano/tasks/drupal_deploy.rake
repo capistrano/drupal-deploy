@@ -17,7 +17,8 @@ namespace :deploy do
 
   desc 'Deploy your project and do an updatedb, feature revert, cache clear...'
   task :full do
-    :deploy
+
+    invoke "deploy"
 
     if fetch(:install_composer)
       invoke "composer:install_executable"
