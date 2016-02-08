@@ -6,6 +6,7 @@ namespace :load do
     set :install_composer, true
     set :install_drush, true
     set :app_path, 'app'
+    set :files_path, 'sites/default/files'
     if fetch(:install_drush)
       set :drush,  "#{fetch(:shared_path)}/drush/drush"
     end
@@ -157,12 +158,12 @@ namespace :files do
 
   desc "Download drupal sites files (from remote to local)"
   task :download do
-    run_locally do 
+    run_locally do
       on release_roles :app do |server|
-        ask(:answer, "Do you really want to download the files on the server to your local files? Nothings will be deleted but files can be ovewrite. (y/N)");
+        ask(:answer, "Do you really want to download the files on the server to your local files? Nothing will be deleted but files can be ovewritten. (y/N)");
         if fetch(:answer) == 'y' then
-          remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/sites/default/files/"
-          local_files_dir = "#{(fetch(:app_path))}/sites/default/files/"
+          remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
+          local_files_dir = "#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
           system("rsync --recursive --times --rsh=ssh --human-readable --progress --exclude='.*' --exclude='css' --exclude='js' #{server.user}@#{server.hostname}:#{remote_files_dir} #{local_files_dir}")
         end
       end
@@ -172,10 +173,10 @@ namespace :files do
   desc "Upload drupal sites files (from local to remote)"
   task :upload do
     on release_roles :app do |server|
-      ask(:answer, "Do you really want to upload your local files to the server? Nothings will be deleted but files can be ovewrite. (y/N)");
+      ask(:answer, "Do you really want to upload your local files to the server? Nothing will be deleted but files can be ovewritten. (y/N)");
       if fetch(:answer) == 'y' then
-        remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/sites/default/files/"
-        local_files_dir = "#{(fetch(:app_path))}/sites/default/files/"
+        remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
+        local_files_dir = "#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
         system("rsync --recursive --times --rsh=ssh --human-readable --progress --exclude='.*' --exclude='css' --exclude='js' #{local_files_dir} #{server.user}@#{server.hostname}:#{remote_files_dir}")
       end
     end
@@ -184,7 +185,7 @@ namespace :files do
   desc "Fix drupal upload files folder permission"
   task :fix_permission do
     on roles(:app) do
-      remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/sites/default/files/*"
+      remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/#{(fetch(:files_path))}/*"
       execute :chgrp, "-R www-data #{remote_files_dir}"
       execute :chmod, "-R g+w #{remote_files_dir}"
     end
