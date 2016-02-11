@@ -41,9 +41,10 @@ namespace :drupal do
   desc 'Run any drush command'
   task :drush do
     ask(:drush_command, "Drush command you want to run (eg. 'cache-clear css-js'). Type 'help' to have a list of avaible drush commands.")
+    command = fetch(:drush_command)
     on roles(:app) do
       within release_path.join(fetch(:app_path)) do
-        execute :drush, fetch(:drush_command)
+        execute :drush, command
       end
     end
   end
