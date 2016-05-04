@@ -6,7 +6,9 @@ namespace :load do
     set :install_composer, true
     set :install_drush, true
     set :app_path, 'app'
+    set :remote_app_path, fetch(:app_path)
     set :files_path, 'sites/default/files'
+    set :backup_path, 'db'
     if fetch(:install_drush)
       set :drush,  "#{fetch(:shared_path)}/drush/drush"
     end
@@ -43,7 +45,7 @@ namespace :drupal do
   task :drush do
     ask(:drush_command, "Drush command you want to run (eg. 'cache-clear css-js'). Type 'help' to have a list of avaible drush commands.")
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, fetch(:drush_command)
       end
     end
@@ -52,7 +54,7 @@ namespace :drupal do
   desc 'Show logs'
   task :logs do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'watchdog-show  --tail'
       end
     end
@@ -61,7 +63,7 @@ namespace :drupal do
   desc 'Provides information about things that may be wrong in your Drupal installation, if any.'
   task :requirements do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'core-requirements'
       end
     end
@@ -70,7 +72,7 @@ namespace :drupal do
   desc 'Open an interactive shell on a Drupal site.'
   task :cli do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'core-cli'
       end
     end
@@ -79,7 +81,7 @@ namespace :drupal do
   desc 'Set the site offline'
   task :site_offline do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'vset maintenance_mode 1 -y'
       end
     end
@@ -88,7 +90,7 @@ namespace :drupal do
   desc 'Set the site online'
   task :site_online do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'vset maintenance_mode 0 -y'
       end
     end
@@ -97,7 +99,7 @@ namespace :drupal do
   desc 'Revert feature'
   task :feature_revert do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'features-revert-all -y'
       end
     end
@@ -106,7 +108,7 @@ namespace :drupal do
   desc 'Backup the database using backup and migrate'
   task :backupdb do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'bam-backup'
       end
     end
@@ -116,7 +118,7 @@ namespace :drupal do
     desc 'List any pending database updates.'
     task :updatedb_status do
       on roles(:app) do
-        within release_path.join(fetch(:app_path)) do
+        within release_path.join(fetch(:remote_app_path)) do
           execute :drush, 'updatedb-status'
         end
       end
@@ -125,7 +127,7 @@ namespace :drupal do
     desc 'Apply any database updates required (as with running update.php).'
     task :updatedb do
       on roles(:app) do
-        within release_path.join(fetch(:app_path)) do
+        within release_path.join(fetch(:remote_app_path)) do
           execute :drush, 'updatedb -y'
         end
       end
@@ -134,7 +136,7 @@ namespace :drupal do
     desc 'Show a report of available minor updates to Drupal core and contrib projects.'
     task :pm_updatestatus do
       on roles(:app) do
-        within release_path.join(fetch(:app_path)) do
+        within release_path.join(fetch(:remote_app_path)) do
           execute :drush, 'pm-updatestatus'
         end
       end
@@ -145,7 +147,7 @@ namespace :drupal do
     desc 'Clear all caches'
     task :clear do
       on roles(:app) do
-        within release_path.join(fetch(:app_path)) do
+        within release_path.join(fetch(:remote_app_path)) do
           execute :drush, 'cache-clear all'
         end
       end
@@ -162,7 +164,7 @@ namespace :files do
       on release_roles :app do |server|
         ask(:answer, "Do you really want to download the files on the server to your local files? Nothing will be deleted but files can be ovewritten. (y/N)");
         if fetch(:answer) == 'y' then
-          remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
+          remote_files_dir = "#{shared_path}/#{(fetch(:files_path))}/"
           local_files_dir = "#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
           system("rsync --recursive --times --rsh=ssh --human-readable --progress --exclude='.*' --exclude='css' --exclude='js' #{server.user}@#{server.hostname}:#{remote_files_dir} #{local_files_dir}")
         end
@@ -175,7 +177,7 @@ namespace :files do
     on release_roles :app do |server|
       ask(:answer, "Do you really want to upload your local files to the server? Nothing will be deleted but files can be ovewritten. (y/N)");
       if fetch(:answer) == 'y' then
-        remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
+        remote_files_dir = "#{shared_path}/#{(fetch(:files_path))}/"
         local_files_dir = "#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
         system("rsync --recursive --times --rsh=ssh --human-readable --progress --exclude='.*' --exclude='css' --exclude='js' #{local_files_dir} #{server.user}@#{server.hostname}:#{remote_files_dir}")
       end
