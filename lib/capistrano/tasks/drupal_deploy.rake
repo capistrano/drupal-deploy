@@ -195,6 +195,107 @@ namespace :files do
 
 end
 
+namespace :db do
+  namespace :backup do
+    namespace :dir do
+      desc "Create backup directory on environment"
+      task :remote do
+        remote_db_dir = "#{deploy_to}/#{(fetch(:backup_path))}"
+        filename = "dump_#{fetch(:branch)}.sql"
+
+        on release_roles :app do
+          unless test("[ -d #{remote_db_dir} ]")
+            on release_roles :app do
+              execute :mkdir, "#{remote_db_dir}"
+            end
+          end
+        end
+      end
+
+      desc "Create backup directory on local environment"
+      task :local do
+        system("mdkir #{fetch(:backup_path)}")
+      end
+    end
+
+    desc "Backup remote environment manually"
+    task :remote do
+      on release_roles :app do
+        invoke "db:backup:dir:remote"
+
+        remote_db_dir = "#{deploy_to}/#{(fetch(:backup_path))}"
+        filename = "dump_#{fetch(:branch)}.sql"
+
+        if test("[ -f #{remote_db_dir}/#{filename}.gz ]") then
+          within deploy_to do
+            execute :rm, "#{fetch(:backup_path)}/#{filename}.gz"
+          end
+        end
+
+        within release_path.join(fetch(:remote_app_path)) do
+          execute :drush, 'sql-dump', '--skip-tables-key=common', '--gzip', "--result-file=#{remote_db_dir}/#{filename}"
+        end
+      end
+    end
+
+    desc "Backup local environment manually"
+    task :local do
+      invoke "db:backup:dir:local"
+      filename = "dump_local.sql"
+      system("abs=$(pwd) && cd #{fetch(:app_path)} && rm $abs/#{fetch(:backup_path)}/#{filename}.gz")
+      system("abs=$(pwd) && cd #{fetch(:app_path)} && drush sql-dump --skip-tables-key=common --gzip --result-file=$abs/#{fetch(:backup_path)}/#{filename}")
+    end
+  end
+
+  desc "Download drupal database (from remote to local) and import"
+  task :pull do
+    ask(:answer, "Do you really want to destroy your local database in order to fill it with remote data? (y/N)");
+    if fetch(:answer) == 'y' then
+      on release_roles :app do |server|
+        invoke "db:backup:remote"
+        invoke "db:backup:local"
+
+        remote_db_dir = "#{deploy_to}/#{(fetch(:backup_path))}"
+        filename = "dump_#{fetch(:branch)}.sql"
+
+        system("scp #{server.user}@#{server.hostname}:#{remote_db_dir}/#{filename}.gz #{fetch(:backup_path)}/")
+        system("cd #{fetch(:app_path)} && drush sql-drop -y")
+        system("cd #{fetch(:backup_path)} && gunzip #{filename}.gz")
+        system("abs=$(pwd) && cd #{fetch(:app_path)} && drush sql-cli < $abs/#{fetch(:backup_path)}/#{filename}")
+      end
+    end
+  end
+
+  desc "Upload drupal database (from local to remote) and import"
+  task :push do
+    ask(:answer, "Do you really want to replace the remote database with a dump from local? (y/N)");
+    if fetch(:answer) == 'y' then
+      on release_roles :app do |server|
+        invoke "db:backup:remote"
+        invoke "db:backup:local"
+
+        remote_db_dir = "#{deploy_to}/#{(fetch(:backup_path))}"
+        filename = "dump_local.sql"
+
+        system("scp #{fetch(:backup_path)}/#{filename}.gz #{server.user}@#{server.hostname}:#{remote_db_dir}/")
+
+        within deploy_to do
+          execute :rm, "#{fetch(:backup_path)}/#{filename}"
+        end
+
+        within deploy_to do
+          execute :gunzip, "#{fetch(:backup_path)}/#{filename}.gz"
+        end
+
+        within release_path.join(fetch(:remote_app_path)) do
+          execute :drush, 'sql-drop', '-y'
+          execute :drush, 'sql-cli', '<', "#{remote_db_dir}/#{filename}"
+        end
+      end
+    end
+  end
+end
+
 
 # Install drush
 namespace :drush do
