@@ -279,8 +279,10 @@ namespace :db do
 
         system("scp #{fetch(:backup_path)}/#{filename}.gz #{server.user}@#{server.hostname}:#{remote_db_dir}/")
 
-        within deploy_to do
-          execute :rm, "#{fetch(:backup_path)}/#{filename}"
+        if test("[ -f #{remote_db_dir}/#{filename} ]") then
+          within deploy_to do
+            execute :rm, "#{fetch(:backup_path)}/#{filename}"
+          end
         end
 
         within deploy_to do
