@@ -6,6 +6,9 @@ namespace :load do
     set :install_composer, true
     set :install_drush, true
     set :app_path, 'app'
+    set :remote_app_path, fetch(:app_path)
+    set :files_path, 'sites/default/files'
+    set :backup_path, 'db'
     if fetch(:install_drush)
       set :drush,  "#{fetch(:shared_path)}/drush/drush"
     end
@@ -42,7 +45,7 @@ namespace :drupal do
   task :drush do
     ask(:drush_command, "Drush command you want to run (eg. 'cache-clear css-js'). Type 'help' to have a list of avaible drush commands.")
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, fetch(:drush_command)
       end
     end
@@ -51,7 +54,7 @@ namespace :drupal do
   desc 'Show logs'
   task :logs do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'watchdog-show  --tail'
       end
     end
@@ -60,7 +63,7 @@ namespace :drupal do
   desc 'Provides information about things that may be wrong in your Drupal installation, if any.'
   task :requirements do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'core-requirements'
       end
     end
@@ -69,7 +72,7 @@ namespace :drupal do
   desc 'Open an interactive shell on a Drupal site.'
   task :cli do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'core-cli'
       end
     end
@@ -78,7 +81,7 @@ namespace :drupal do
   desc 'Set the site offline'
   task :site_offline do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'vset maintenance_mode 1 -y'
       end
     end
@@ -87,7 +90,7 @@ namespace :drupal do
   desc 'Set the site online'
   task :site_online do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'vset maintenance_mode 0 -y'
       end
     end
@@ -96,7 +99,7 @@ namespace :drupal do
   desc 'Revert feature'
   task :feature_revert do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'features-revert-all -y'
       end
     end
@@ -105,7 +108,7 @@ namespace :drupal do
   desc 'Backup the database using backup and migrate'
   task :backupdb do
     on roles(:app) do
-      within release_path.join(fetch(:app_path)) do
+      within release_path.join(fetch(:remote_app_path)) do
         execute :drush, 'bam-backup'
       end
     end
@@ -115,7 +118,7 @@ namespace :drupal do
     desc 'List any pending database updates.'
     task :updatedb_status do
       on roles(:app) do
-        within release_path.join(fetch(:app_path)) do
+        within release_path.join(fetch(:remote_app_path)) do
           execute :drush, 'updatedb-status'
         end
       end
@@ -124,7 +127,7 @@ namespace :drupal do
     desc 'Apply any database updates required (as with running update.php).'
     task :updatedb do
       on roles(:app) do
-        within release_path.join(fetch(:app_path)) do
+        within release_path.join(fetch(:remote_app_path)) do
           execute :drush, 'updatedb -y'
         end
       end
@@ -133,7 +136,7 @@ namespace :drupal do
     desc 'Show a report of available minor updates to Drupal core and contrib projects.'
     task :pm_updatestatus do
       on roles(:app) do
-        within release_path.join(fetch(:app_path)) do
+        within release_path.join(fetch(:remote_app_path)) do
           execute :drush, 'pm-updatestatus'
         end
       end
@@ -144,7 +147,7 @@ namespace :drupal do
     desc 'Clear all caches'
     task :clear do
       on roles(:app) do
-        within release_path.join(fetch(:app_path)) do
+        within release_path.join(fetch(:remote_app_path)) do
           execute :drush, 'cache-clear all'
         end
       end
@@ -157,12 +160,12 @@ namespace :files do
 
   desc "Download drupal sites files (from remote to local)"
   task :download do
-    run_locally do 
+    run_locally do
       on release_roles :app do |server|
-        ask(:answer, "Do you really want to download the files on the server to your local files? Nothings will be deleted but files can be ovewrite. (y/N)");
+        ask(:answer, "Do you really want to download the files on the server to your local files? Nothing will be deleted but files can be ovewritten. (y/N)");
         if fetch(:answer) == 'y' then
-          remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/sites/default/files/"
-          local_files_dir = "#{(fetch(:app_path))}/sites/default/files/"
+          remote_files_dir = "#{shared_path}/#{(fetch(:files_path))}/"
+          local_files_dir = "#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
           system("rsync --recursive --times --rsh=ssh --human-readable --progress --exclude='.*' --exclude='css' --exclude='js' #{server.user}@#{server.hostname}:#{remote_files_dir} #{local_files_dir}")
         end
       end
@@ -172,10 +175,10 @@ namespace :files do
   desc "Upload drupal sites files (from local to remote)"
   task :upload do
     on release_roles :app do |server|
-      ask(:answer, "Do you really want to upload your local files to the server? Nothings will be deleted but files can be ovewrite. (y/N)");
+      ask(:answer, "Do you really want to upload your local files to the server? Nothing will be deleted but files can be ovewritten. (y/N)");
       if fetch(:answer) == 'y' then
-        remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/sites/default/files/"
-        local_files_dir = "#{(fetch(:app_path))}/sites/default/files/"
+        remote_files_dir = "#{shared_path}/#{(fetch(:files_path))}/"
+        local_files_dir = "#{(fetch(:app_path))}/#{(fetch(:files_path))}/"
         system("rsync --recursive --times --rsh=ssh --human-readable --progress --exclude='.*' --exclude='css' --exclude='js' #{local_files_dir} #{server.user}@#{server.hostname}:#{remote_files_dir}")
       end
     end
@@ -184,12 +187,115 @@ namespace :files do
   desc "Fix drupal upload files folder permission"
   task :fix_permission do
     on roles(:app) do
-      remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/sites/default/files/*"
+      remote_files_dir = "#{shared_path}/#{(fetch(:app_path))}/#{(fetch(:files_path))}/*"
       execute :chgrp, "-R www-data #{remote_files_dir}"
       execute :chmod, "-R g+w #{remote_files_dir}"
     end
   end
 
+end
+
+namespace :db do
+  namespace :backup do
+    namespace :dir do
+      desc "Create backup directory on environment"
+      task :remote do
+        remote_db_dir = "#{deploy_to}/#{(fetch(:backup_path))}"
+        filename = "dump_#{fetch(:branch)}.sql"
+
+        on release_roles :app do
+          unless test("[ -d #{remote_db_dir} ]")
+            on release_roles :app do
+              execute :mkdir, "#{remote_db_dir}"
+            end
+          end
+        end
+      end
+
+      desc "Create backup directory on local environment"
+      task :local do
+        system("mdkir #{fetch(:backup_path)}")
+      end
+    end
+
+    desc "Backup remote environment manually"
+    task :remote do
+      on release_roles :app do
+        invoke "db:backup:dir:remote"
+
+        remote_db_dir = "#{deploy_to}/#{(fetch(:backup_path))}"
+        filename = "dump_#{fetch(:branch)}.sql"
+
+        if test("[ -f #{remote_db_dir}/#{filename}.gz ]") then
+          within deploy_to do
+            execute :rm, "#{fetch(:backup_path)}/#{filename}.gz"
+          end
+        end
+
+        within release_path.join(fetch(:remote_app_path)) do
+          execute :drush, 'sql-dump', '--skip-tables-key=common', '--gzip', "--result-file=#{remote_db_dir}/#{filename}"
+        end
+      end
+    end
+
+    desc "Backup local environment manually"
+    task :local do
+      invoke "db:backup:dir:local"
+      filename = "dump_local.sql"
+      system("abs=$(pwd) && cd #{fetch(:app_path)} && rm $abs/#{fetch(:backup_path)}/#{filename}.gz")
+      system("abs=$(pwd) && cd #{fetch(:app_path)} && drush sql-dump --skip-tables-key=common --gzip --result-file=$abs/#{fetch(:backup_path)}/#{filename}")
+    end
+  end
+
+  desc "Download drupal database (from remote to local) and import"
+  task :pull do
+    ask(:answer, "Do you really want to destroy your local database in order to fill it with remote data? (y/N)");
+    if fetch(:answer) == 'y' then
+      on release_roles :app do |server|
+        invoke "db:backup:remote"
+        invoke "db:backup:local"
+
+        remote_db_dir = "#{deploy_to}/#{(fetch(:backup_path))}"
+        filename = "dump_#{fetch(:branch)}.sql"
+
+        system("scp #{server.user}@#{server.hostname}:#{remote_db_dir}/#{filename}.gz #{fetch(:backup_path)}/")
+        system("cd #{fetch(:app_path)} && drush sql-drop -y")
+        system("cd #{fetch(:backup_path)} && gunzip #{filename}.gz")
+        system("abs=$(pwd) && cd #{fetch(:app_path)} && drush sql-cli < $abs/#{fetch(:backup_path)}/#{filename}")
+      end
+    end
+  end
+
+  desc "Upload drupal database (from local to remote) and import"
+  task :push do
+    ask(:answer, "Do you really want to replace the remote database with a dump from local? (y/N)");
+    if fetch(:answer) == 'y' then
+      on release_roles :app do |server|
+        invoke "db:backup:remote"
+        invoke "db:backup:local"
+
+        remote_db_dir = "#{deploy_to}/#{(fetch(:backup_path))}"
+        filename = "dump_local.sql"
+
+        system("scp #{fetch(:backup_path)}/#{filename}.gz #{server.user}@#{server.hostname}:#{remote_db_dir}/")
+
+        if test("[ -f #{remote_db_dir}/#{filename} ]") then
+          within deploy_to do
+            execute :rm, "#{fetch(:backup_path)}/#{filename}"
+          end
+        end
+
+        within deploy_to do
+          execute :gunzip, "#{fetch(:backup_path)}/#{filename}.gz"
+        end
+
+        within release_path.join(fetch(:remote_app_path)) do
+          execute :drush, 'sql-drop', '-y'
+          execute :drush, 'sql-cli', '<', "#{remote_db_dir}/#{filename}"
+        end
+      end
+    end
+  end
 end
 
 
