@@ -99,13 +99,13 @@ set :branch, 'dev'
 For more information about configuration http://capistranorb.com/
 
 
-## Deployement
+## Deployment
 
 Run deploy
 
 	$ cap <stage_name> deploy
 
-After a couple a command, it will fail with this error:
+After a couple of commands, it will fail with this error:
 
 	Finished in 0.067 seconds with exit status 1 (failed).
 	ERROR linked file /var/www/stage_name/my_app/shared/app/sites/default/settings.php does not exist on staging.mysite.com
@@ -117,7 +117,7 @@ On the server your webserver user (eg. www-data) need to has the right to write 
 	/var/www/stage_name/my_app/shared/app/sites/default/files
 	/var/www/stage_name/my_app/shared/private-files
 
-Once this is done, try and deploy again. If everything goes well, Capistrano will clone your app from your repositroy and work the rest.
+Once this is done, try and deploy again. If everything goes well, Capistrano will clone your app from your repository and work the rest.
 
 Now, every time you want to deploy your app
 
@@ -133,7 +133,7 @@ If you want to deploy your app and also revert features, clear cache
 
 	$ cap deploy:full
 	
-And if some troubles occur, juste launch the rollback command to return to the previous release.
+And if some troubles occur, just launch the rollback command to return to the previous release.
 
 	$ cap deploy:rollback
 
