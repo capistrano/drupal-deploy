@@ -8,6 +8,7 @@ namespace :load do
     set :app_path, 'app'
     if fetch(:install_drush)
       set :drush,  "#{fetch(:shared_path)}/drush/drush"
+      set :drush_version, "~6.0.0"
     end
   end
 end
@@ -200,7 +201,7 @@ namespace :drush do
   task :install do
     on roles(:app) do
       within shared_path do
-        execute :composer, 'require drush/drush:~6.0.0'
+        execute :composer, "require drush/drush:#{fetch(:drush_version)}"
       end
     end
   end
