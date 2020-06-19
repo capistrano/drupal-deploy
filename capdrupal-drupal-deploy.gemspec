@@ -5,7 +5,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 
 Gem::Specification.new do |spec|
   spec.name         = 'capistrano-drupal-deploy'
-  spec.version      = '0.0.2'
+  spec.version      = '0.0.3'
   spec.license      = 'MIT'
   spec.authors  = [ "Simon Perdrisat", "Gilles Doge" ]
   spec.email    = 'perdrisat@gmail.com'
